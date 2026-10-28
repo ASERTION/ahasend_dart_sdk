@@ -1,0 +1,37 @@
+# Dart and pub
+.dart_tool/
+.packages
+build/
+# A library package does not commit its lock file.
+pubspec.lock
+pubspec_overrides.yaml
+
+# Generated API documentation (dart doc)
+doc/api/
+
+# Test coverage
+coverage/
+
+# Compiled benchmarks and snapshots
+*.exe
+*.aot
+*.dill
+*.jit
+
+# Editors and IDEs
+.idea/
+*.iml
+.vscode/
+*.code-workspace
+
+# Operating systems
+.DS_Store
+Thumbs.db
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
+# Local Claude Code settings
+.claude/settings.local.json

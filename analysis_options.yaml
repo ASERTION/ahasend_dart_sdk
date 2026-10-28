@@ -1,0 +1,25 @@
+include: package:lints/recommended.yaml
+
+linter:
+  rules:
+    # Type safety (replace the strict-casts and strict-raw-types options).
+    - no_dynamic_casts
+    - no_raw_types
+    - avoid_dynamic_calls
+    # Style of Dart 3.13.
+    - use_declaring_parameters
+    - use_primary_constructors
+    - unnecessary_primary_constructor_body
+    - unnecessary_type_name_in_constructor
+    - unnecessary_const_in_enum_constructor
+    - initialize_in_field_declaration
+    - empty_container_bodies
+    - async_return_with_no_await
+    - simplify_variable_pattern
+    # General.
+    - always_declare_return_types
+    - prefer_final_fields
+    - prefer_final_locals
+    - prefer_single_quotes
+    - public_member_api_docs
+    - unawaited_futures

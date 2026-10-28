@@ -1,0 +1,36 @@
+# Files left out of the published package.
+#
+# When this file exists, `dart pub publish` ignores .gitignore in this
+# directory, so the entries of .gitignore are repeated here.
+
+# Development only: the API specs, the test that checks the SDK against
+# them, and the benchmarks.
+tool/
+benchmark/
+test/spec_coverage_test.dart
+
+# Repository and editor settings
+.github/
+.claude/
+
+# Same as .gitignore
+.dart_tool/
+.packages
+build/
+pubspec.lock
+pubspec_overrides.yaml
+doc/api/
+coverage/
+*.exe
+*.aot
+*.dill
+*.jit
+.idea/
+*.iml
+.vscode/
+*.code-workspace
+.DS_Store
+Thumbs.db
+.env
+.env.*
+!.env.example
