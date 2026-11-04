@@ -512,10 +512,26 @@ final class const MessageEventData({
   /// The subject line.
   required final String subject,
 
-  /// The Message-ID header, as returned when the message was created.
+  /// The Message-ID header, as returned in
+  /// `CreateSingleMessageResponse.messageIdHeader` when the message was
+  /// created.
+  ///
+  /// It never changes for a message, so use it to group the events of a
+  /// message and to match them with the send.
   required final String messageIdHeader,
 
-  /// The internal AhaSend message ID.
+  /// The API message ID, the same value as `CreateSingleMessageResponse.id`
+  /// and the ID `messages.get` takes.
+  ///
+  /// Since 9 November 2026 this is a hyphenated UUID of 36 characters.
+  /// Before, it was the internal AhaSend ID, a different value of 32 hex
+  /// characters without hyphens. A message sent before that date can
+  /// receive events with either ID for up to 30 days, so group events by
+  /// [messageIdHeader], not by this ID. `messages.get` accepts both.
+  ///
+  /// Campaign messages send the same events with an ID of the same format,
+  /// which groups their events too. `messages.get` cannot fetch campaign
+  /// messages by it.
   required final String id,
 
   /// The user agent of the client, for opens.
@@ -664,7 +680,12 @@ final class const MessageClickedEventData({
   /// The subject line.
   required final String subject,
 
-  /// The Message-ID header, as returned when the message was created.
+  /// The Message-ID header, as returned in
+  /// `CreateSingleMessageResponse.messageIdHeader` when the message was
+  /// created.
+  ///
+  /// It never changes for a message, so use it to group the events of a
+  /// message and to match them with the send.
   required final String messageIdHeader,
 
   /// The URL that was clicked.
@@ -676,7 +697,10 @@ final class const MessageClickedEventData({
   /// The IP address of the client that clicked.
   required final String ip,
 
-  /// The internal AhaSend message ID.
+  /// The API message ID, as in [MessageEventData.id]: since 9 November
+  /// 2026 a hyphenated UUID of 36 characters, before the internal AhaSend
+  /// ID of 32 hex characters. Group events by [messageIdHeader], not by
+  /// this ID. `messages.get` cannot fetch campaign messages by it.
   required final String id,
 
   /// Whether the click was made by a bot. `null` carries no signal.

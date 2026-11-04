@@ -21,7 +21,7 @@ Map<String, Object?> messagePayload(
     'recipient': 'recipient@example.com',
     'subject': 'Welcome to our service',
     'message_id_header': '<message-id-12345@localhost>',
-    'id': '407926766d2711f09b30960002cafe7c',
+    'id': '0192f5a4-7b1c-7d3e-9a2b-4c5d6e7f8a9b',
     ...extra,
   },
 };
@@ -55,10 +55,23 @@ void main() {
         expect(message.data.event.value, c.$1);
         expect(message.data.recipient, 'recipient@example.com');
         expect(message.data.messageIdHeader, '<message-id-12345@localhost>');
-        expect(message.data.id, '407926766d2711f09b30960002cafe7c');
+        expect(message.data.id, '0192f5a4-7b1c-7d3e-9a2b-4c5d6e7f8a9b');
         expect(message.data.deliveryAttempt, isNull);
         expect(message.data.isBot, isNull);
       });
+    });
+
+    test('old 32-character IDs from before 9 November 2026 still decode', () {
+      final event = parse(
+        messagePayload(
+          'message.delivered',
+          'on_delivered',
+          extra: {'id': '407926766d2711f09b30960002cafe7c'},
+        ),
+      );
+      final message = event as MessageWebhookEvent;
+      expect(message.data.id, '407926766d2711f09b30960002cafe7c');
+      expect(message.data.messageIdHeader, '<message-id-12345@localhost>');
     });
 
     test('timestamps with nanoseconds are parsed', () {

@@ -41,7 +41,8 @@ void main() {
           'data': [
             {
               'object': 'message',
-              'id': '<abc@example.com>',
+              'id': '0192f5a4-7b1c-7d3e-9a2b-4c5d6e7f8a9b',
+              'message_id_header': '<abc@example.com>',
               'recipient': {'email': 'b@example.com', 'name': 'B'},
               'status': 'queued',
               'error': null,
@@ -87,9 +88,43 @@ void main() {
       });
 
       final created = response.data.single;
-      expect(created.id, '<abc@example.com>');
+      expect(created.id, '0192f5a4-7b1c-7d3e-9a2b-4c5d6e7f8a9b');
+      expect(created.messageIdHeader, '<abc@example.com>');
       expect(created.status, CreatedMessageStatus.queued);
       expect(created.recipient.name, 'B');
+      expect(created.toJson()['message_id_header'], '<abc@example.com>');
+    });
+
+    test('decodes responses from before message_id_header existed', () {
+      // Responses from before 9 November 2026, and idempotent replays of
+      // such requests, carry the Message-ID header in `id`.
+      final created = CreateSingleMessageResponse.fromJson(const {
+        'object': 'message',
+        'id': '<abc@example.com>',
+        'recipient': {'email': 'b@example.com', 'name': 'B'},
+        'status': 'queued',
+        'error': null,
+      });
+      expect(created.id, '<abc@example.com>');
+      expect(created.messageIdHeader, isNull);
+      expect(created.toString(), isNot(contains('messageIdHeader')));
+    });
+
+    test('failed recipients have neither id nor message_id_header', () {
+      final created = CreateSingleMessageResponse.fromJson(const {
+        'object': 'message',
+        'id': null,
+        'message_id_header': null,
+        'recipient': {'email': 'b@example.com', 'name': 'B'},
+        'status': 'error',
+        'error': 'suppressed',
+      });
+      expect(created.id, isNull);
+      expect(created.messageIdHeader, isNull);
+      expect(created.status, CreatedMessageStatus.error);
+      // Like the API, toJson keeps both keys with a null value.
+      expect(created.toJson(), containsPair('id', null));
+      expect(created.toJson(), containsPair('message_id_header', null));
     });
 
     test('template and conversation sends use their own paths', () async {

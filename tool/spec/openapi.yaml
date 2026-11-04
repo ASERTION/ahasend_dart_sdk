@@ -1244,7 +1244,18 @@ components:
           description: Object type identifier
         id:
           type: [string, 'null']
-          description: Message ID (null if the message was not sent)
+          description: |
+            API message ID (null if the message was not sent). Since
+            9 November 2026 a bare UUID; before, the Message-ID header.
+            Get Message and Cancel Message accept both forms.
+          example: 0192f5a4-7b1c-7d3e-9a2b-4c5d6e7f8a9b
+        message_id_header:
+          type: [string, 'null']
+          description: |
+            Message-ID header of the email exactly as sent, including angle
+            brackets. Null if the message was not sent; absent in responses
+            from before 9 November 2026. Same value as
+            `data.message_id_header` in message webhooks.
           example: <uuid@example.com>
         recipient:
           allOf:
@@ -6190,7 +6201,7 @@ paths:
             type: string
         - name: message_id_header
           in: query
-          description: Filter by message ID header (same ID returned by CreateMessage API)
+          description: Exact match on the Message-ID header, including angle brackets (the `message_id_header` returned by Create Message or message webhooks; before 9 November 2026 the `id` of Create Message)
           schema:
             type: string
         - name: tags
@@ -6893,7 +6904,7 @@ paths:
         - name: message_id
           in: path
           required: true
-          description: Message API ID. Accepts the generated Message-ID returned by [Create Message](https://ahasend.com/docs/api-reference/messages/create-message) or [Create Template Message](https://ahasend.com/docs/api-reference/messages/create-template-message), for example `<uuid@example.com>`, or the bare UUID portion.
+          description: Message API ID. Accepts the generated Message-ID returned by [Create Message](https://ahasend.com/docs/api-reference/messages/create-message) or [Create Template Message](https://ahasend.com/docs/api-reference/messages/create-template-message), for example `<uuid@example.com>`, or the bare UUID portion. Also accepts the API message ID (`id` of the Create Message response since 9 November 2026, and `data.id` of message webhooks) and the older AhaSend ID (32 hex characters) from webhooks sent before that date.
           schema:
             type: string
       security:
@@ -6999,7 +7010,7 @@ paths:
         - name: message_id
           in: path
           required: true
-          description: Message API ID. Accepts the generated Message-ID returned by [Create Message](https://ahasend.com/docs/api-reference/messages/create-message) or [Create Template Message](https://ahasend.com/docs/api-reference/messages/create-template-message), for example `<uuid@example.com>`, or the bare UUID portion.
+          description: Message API ID. Accepts the generated Message-ID returned by [Create Message](https://ahasend.com/docs/api-reference/messages/create-message) or [Create Template Message](https://ahasend.com/docs/api-reference/messages/create-template-message), for example `<uuid@example.com>`, or the bare UUID portion. Also accepts the API message ID (`id` of the Create Message response since 9 November 2026, and `data.id` of message webhooks) and the older AhaSend ID (32 hex characters) from webhooks sent before that date.
           schema:
             type: string
       security:

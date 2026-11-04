@@ -434,8 +434,29 @@ extension type const CreatedMessageStatus(
 
 /// The outcome of submitting a message for one recipient.
 final class const CreateSingleMessageResponse({
-  /// The message ID, or `null` when the message was not sent.
+  /// The API message ID, or `null` when the message was not sent.
+  ///
+  /// Since 9 November 2026 this is a bare UUID, and webhook events carry
+  /// the same value in `MessageEventData.id`. Responses from before that
+  /// date, and idempotent replays of such requests, contain the Message-ID
+  /// header here instead. Both forms work with `messages.get` and
+  /// `messages.cancel`.
+  ///
+  /// To match a send with its webhook events or to filter `messages.list`,
+  /// use [messageIdHeader].
   required final String? id,
+
+  /// The Message-ID header of the email exactly as sent, including the
+  /// angle brackets, such as `<uuid@example.com>`.
+  ///
+  /// It equals `MessageEventData.messageIdHeader` in webhook events, and
+  /// the `messageIdHeader` filter of `messages.list` matches it exactly.
+  /// It is `null` when the message was not sent, and in responses from
+  /// before 9 November 2026,
+  /// including idempotent replays of such requests. In those responses [id]
+  /// holds the Message-ID header, so `messageIdHeader ?? id` gives the
+  /// header in every case.
+  final String? messageIdHeader,
 
   /// The recipient.
   required final Recipient recipient,
@@ -458,6 +479,7 @@ final class const CreateSingleMessageResponse({
   /// Decodes a submission outcome from JSON.
   factory fromJson(JsonMap json) => CreateSingleMessageResponse(
     id: json['id'] as String?,
+    messageIdHeader: json['message_id_header'] as String?,
     recipient: Recipient.fromJson(asJsonMap(json['recipient'])),
     status: decodeEnum(json['status'], CreatedMessageStatus.new),
     error: json['error'] as String?,
@@ -472,6 +494,7 @@ final class const CreateSingleMessageResponse({
   JsonMap toJson() => {
     'object': 'message',
     'id': id,
+    'message_id_header': messageIdHeader,
     'recipient': recipient.toJson(),
     'status': status.value,
     'error': error,
@@ -480,7 +503,9 @@ final class const CreateSingleMessageResponse({
 
   @override
   String toString() =>
-      'CreateSingleMessageResponse(id: $id, recipient: $recipient, '
+      'CreateSingleMessageResponse(id: $id, '
+      '${messageIdHeader == null ? '' : 'messageIdHeader: $messageIdHeader, '}'
+      'recipient: $recipient, '
       'status: ${status.value}${error == null ? '' : ', error: $error'})';
 }
 

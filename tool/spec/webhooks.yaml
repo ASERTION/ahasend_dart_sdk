@@ -112,7 +112,7 @@ webhooks:
                 recipient: "recipient@example.com"
                 subject: "Welcome to our service"
                 message_id_header: "<message-id-12345@localhost>"
-                id: "407926766d2711f09b30960002cafe7c"
+                id: "0192f5a4-7b1c-7d3e-9a2b-4c5d6e7f8a9b"
       responses:
         '200':
           description: Webhook received successfully
@@ -153,7 +153,7 @@ webhooks:
                 recipient: "recipient@example.com"
                 subject: "Welcome to our service"
                 message_id_header: "<message-id-12345@localhost>"
-                id: "407926766d2711f09b30960002cafe7c"
+                id: "0192f5a4-7b1c-7d3e-9a2b-4c5d6e7f8a9b"
                 delivery_attempt:
                   smtp_code: 250
                   enhanced_status_code: "2.0.0"
@@ -202,7 +202,7 @@ webhooks:
                 recipient: "recipient@example.com"
                 subject: "Welcome to our service"
                 message_id_header: "<message-id-12345@localhost>"
-                id: "407926766d2711f09b30960002cafe7c"
+                id: "0192f5a4-7b1c-7d3e-9a2b-4c5d6e7f8a9b"
                 delivery_attempt:
                   classification: "QuotaIssues"
                   smtp_code: 452
@@ -249,7 +249,7 @@ webhooks:
                 recipient: "invalid@nonexistent-domain.com"
                 subject: "Welcome to our service"
                 message_id_header: "<message-id-12345@localhost>"
-                id: "407926766d2711f09b30960002cafe7c"
+                id: "0192f5a4-7b1c-7d3e-9a2b-4c5d6e7f8a9b"
       responses:
         '200':
           description: Webhook received successfully
@@ -290,7 +290,7 @@ webhooks:
                 recipient: "recipient@example.com"
                 subject: "Welcome to our service"
                 message_id_header: "<message-id-12345@localhost>"
-                id: "407926766d2711f09b30960002cafe7c"
+                id: "0192f5a4-7b1c-7d3e-9a2b-4c5d6e7f8a9b"
                 delivery_attempt:
                   classification: "InvalidRecipient"
                   smtp_code: 550
@@ -337,7 +337,7 @@ webhooks:
                 recipient: "bounced@example.com"
                 subject: "Welcome to our service"
                 message_id_header: "<message-id-12345@localhost>"
-                id: "407926766d2711f09b30960002cafe7c"
+                id: "0192f5a4-7b1c-7d3e-9a2b-4c5d6e7f8a9b"
       responses:
         '200':
           description: Webhook received successfully
@@ -385,7 +385,7 @@ webhooks:
                 recipient: "recipient@example.com"
                 subject: "Welcome to our service"
                 message_id_header: "<message-id-12345@localhost>"
-                id: "407926766d2711f09b30960002cafe7c"
+                id: "0192f5a4-7b1c-7d3e-9a2b-4c5d6e7f8a9b"
                 user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
                 ip: "192.168.1.100"
                 is_bot: false
@@ -433,7 +433,7 @@ webhooks:
                 recipient: "recipient@example.com"
                 subject: "Welcome to our service"
                 message_id_header: "<message-id-12345@localhost>"
-                id: "407926766d2711f09b30960002cafe7c"
+                id: "0192f5a4-7b1c-7d3e-9a2b-4c5d6e7f8a9b"
                 url: "https://example.com/landing-page"
                 user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
                 ip: "192.168.1.100"
@@ -782,10 +782,16 @@ components:
           description: Email subject line
         message_id_header:
           type: string
-          description: Message ID header (same as returned by [Create Message](https://ahasend.com/docs/api-reference/messages/create-message) or [Create Template Message](https://ahasend.com/docs/api-reference/messages/create-template-message))
+          description: Message ID header (same as `message_id_header` returned by [Create Message](https://ahasend.com/docs/api-reference/messages/create-message) or [Create Template Message](https://ahasend.com/docs/api-reference/messages/create-template-message)). Never changes for a message, so use it to group events.
         id:
           type: string
-          description: Internal AhaSend message ID
+          description: |
+            API message ID, the same value as `id` in the Create Message
+            response and the ID Get Message takes: a hyphenated UUID of 36
+            characters since 9 November 2026 (before: the internal AhaSend
+            ID, a different value of 32 hex characters). Campaign messages
+            use the same format, but Get Message cannot fetch them by it.
+            Group events by `message_id_header`, which never changes.
         user_agent:
           type: string
           description: User agent (only for opened/clicked events)
@@ -876,7 +882,7 @@ components:
           description: Email subject line
         message_id_header:
           type: string
-          description: Message ID header (same as returned by [Create Message](https://ahasend.com/docs/api-reference/messages/create-message) or [Create Template Message](https://ahasend.com/docs/api-reference/messages/create-template-message))
+          description: Message ID header (same as `message_id_header` returned by [Create Message](https://ahasend.com/docs/api-reference/messages/create-message) or [Create Template Message](https://ahasend.com/docs/api-reference/messages/create-template-message)). Never changes for a message, so use it to group events.
         url:
           type: string
           description: The URL that was clicked
@@ -888,7 +894,13 @@ components:
           description: IP address of the client that clicked the link
         id:
           type: string
-          description: Internal AhaSend message ID
+          description: |
+            API message ID, the same value as `id` in the Create Message
+            response and the ID Get Message takes: a hyphenated UUID of 36
+            characters since 9 November 2026 (before: the internal AhaSend
+            ID, a different value of 32 hex characters). Campaign messages
+            use the same format, but Get Message cannot fetch them by it.
+            Group events by `message_id_header`, which never changes.
         is_bot:
           type: boolean
           description: |

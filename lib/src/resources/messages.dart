@@ -63,7 +63,10 @@ interface class MessagesResource(super.transport, super.accountId)
   /// Lists message summaries, newest first.
   ///
   /// [status] filters by statuses such as `Delivered`, `Bounced` or
-  /// `Sandbox Delivered`. [tags] holds at most 20 tags.
+  /// `Sandbox Delivered`. [tags] holds at most 20 tags. [messageIdHeader]
+  /// is an exact match on the Message-ID header: pass it with its angle
+  /// brackets, exactly as `CreateSingleMessageResponse.messageIdHeader` or
+  /// `MessageEventData.messageIdHeader` gives it, not the message ID.
   ///
   /// Requires the `messages:read:all` or `messages:read:{domain}` scope.
   Future<CursorPage<MessageSummary>> list({
@@ -132,8 +135,10 @@ interface class MessagesResource(super.transport, super.accountId)
 
   /// Fetches a message with its content.
   ///
-  /// [messageId] is the API message ID or the Message-ID header value
-  /// returned when the message was created.
+  /// [messageId] is the API message ID (`CreateSingleMessageResponse.id`
+  /// or `MessageEventData.id`), the Message-ID header, or the older
+  /// AhaSend ID from webhook events sent before 9 November 2026. Campaign
+  /// messages cannot be fetched.
   ///
   /// Requires the `messages:read:all` or `messages:read:{domain}` scope.
   Future<Message> get(String messageId, {RequestOptions? options}) async =>
@@ -145,6 +150,8 @@ interface class MessagesResource(super.transport, super.accountId)
       );
 
   /// Cancels a scheduled message that has not been delivered yet.
+  ///
+  /// [messageId] takes the same forms as in [get].
   ///
   /// Requires the `messages:cancel:all` or `messages:cancel:{domain}`
   /// scope.

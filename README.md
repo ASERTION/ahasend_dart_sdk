@@ -257,8 +257,23 @@ for (final result in response.data) {
 ```
 
 Keep the returned `id`: it identifies the message when you
-[look it up](#checking-what-happened-to-a-message) and appears in
-[webhook events](#webhooks).
+[look it up](#checking-what-happened-to-a-message) or cancel it, and
+webhook events of messages sent since 9 November 2026 carry it as
+`data.id`. To match a send with its
+[webhook events](#webhooks), or to filter the message list, use
+`result.messageIdHeader` instead: the Message-ID header of the email
+(`<…@…>`), which never changes for a message. Responses from before
+9 November 2026, and idempotent replays of such requests, have no
+`messageIdHeader` but hold the header in `id`, so this works in every case:
+
+```dart
+final messageIdHeader = result.messageIdHeader ?? result.id;
+```
+
+> Since 9 November 2026, `id` is a bare UUID and the Message-ID header has
+> moved to `messageIdHeader`. Before, `id` held the Message-ID header. Both
+> forms keep working with `messages.get` and `messages.cancel`. See
+> [AhaSend's announcement](https://ahasend.com/blog/important-two-changes-message-ids-ahasend-api-and-webhooks).
 
 ### Personalizing with substitutions
 
@@ -431,6 +446,8 @@ await for (final message in client.messages.listAll(
 ```
 
 Other filters are `sender`, `recipient`, `subject` and `messageIdHeader`.
+`messageIdHeader` is an exact match: pass the header with its angle
+brackets, as the send response or a webhook event gives it.
 For live updates instead of polling, use [webhooks](#webhooks).
 
 ## Domains and DNS
@@ -1059,6 +1076,12 @@ int handle(String rawBody, Map<String, String> headers) {
   return 204;
 }
 ```
+
+Group the events of a message by `data.messageIdHeader`: it equals
+`messageIdHeader` from the send response and never changes. `data.id` is
+the API message ID, but a message sent before 9 November 2026 can receive
+events with an older, different ID for up to 30 days. Campaign messages
+send the same events; `messages.get` cannot fetch them by `data.id`.
 
 The verifier checks the signature in constant time and rejects timestamps
 more than five minutes away from the current time. It does not protect
