@@ -1,6 +1,7 @@
 ## Unreleased
 
-AhaSend changed the templates API in October 2026. See the
+AhaSend changed the templates API in October 2026 and added email
+statistics in November 2026. See the
 [AhaSend changelog](https://ahasend.com/docs/changelog).
 
 ### Changes
@@ -17,6 +18,17 @@ AhaSend changed the templates API in October 2026. See the
   works. It now reads the template with `templates.get` and returns its
   draft, and throws a `NotFoundException` when there is none, as before.
   Use `templates.get` instead.
+- New `statistics.emails`: stored email counts of transactional, campaign
+  and inbound mail for the account or per domain, in hourly, daily, weekly
+  or monthly periods, for any time in the account's history. It returns an
+  `EmailStatisticsResponse` with `totals`, one `EmailStatistics` row per
+  period (and domain, with `breakdown: EmailStatisticsBreakdown.domain`)
+  and `nextPage()` for breakdowns. See
+  [Get Email Statistics](https://ahasend.com/docs/api-reference/reports/get-email-statistics).
+- The documentation of `StatisticsResource` names the new statistics
+  scopes, `statistics:read:all` and `statistics:read:{domain}`. The API
+  still accepts the old `statistics-transactional:read:*` names, but
+  refuses an API key that lists the same access under both names.
 - `tool/spec/openapi.yaml` is updated to the current AhaSend API.
 
 ## 1.0.0

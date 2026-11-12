@@ -166,7 +166,7 @@ interface class AhaSendClient._(
     accountId,
   );
 
-  /// Read transactional email statistics.
+  /// Read email and transactional statistics.
   late final StatisticsResource statistics = StatisticsResource(
     _transport,
     accountId,
