@@ -795,6 +795,18 @@ await client.messages.createFromTemplate(
 `from`, `subject` and `replyTo` in the request override the template's
 defaults.
 
+A send uses the template's published copy. `client.templates.get` returns
+the working copy, which is the draft while the template has one, so read
+the variables a send has to supply with `getPublished`:
+
+```dart
+final published = await client.templates.getPublished(template.id);
+final requiredNames = [
+  for (final variable in published.variables)
+    if (variable.required) variable.name,
+];
+```
+
 ### Edit, publish and roll back
 
 Updates go to a draft. Sends keep using the published version until you
@@ -811,7 +823,9 @@ await client.templates.update(
   ),
 );
 
-final draft = await client.templates.getDraft(template.id); // Review it.
+// Review the draft: get returns it while the template has one.
+final draft = await client.templates.get(template.id);
+print(draft.hasDraft); // true
 await client.templates.publish(template.id);
 // Or throw the draft away: await client.templates.discardDraft(template.id);
 

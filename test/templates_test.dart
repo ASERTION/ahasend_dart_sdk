@@ -6,7 +6,10 @@ import 'helpers.dart';
 const templateId = '0b4f2c1e-6d7a-4c8b-9e0f-1a2b3c4d5e6f';
 const versionId = '9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d';
 
-Map<String, Object?> templateJson({bool withContent = true}) => {
+Map<String, Object?> templateJson({
+  bool withContent = true,
+  bool hasDraft = false,
+}) => {
   'object': 'template',
   'id': templateId,
   'created_at': '2025-10-01T09:00:00Z',
@@ -27,7 +30,7 @@ Map<String, Object?> templateJson({bool withContent = true}) => {
   'from': {'email': 'shop@example.com', 'name': 'Shop'},
   'reply_to': null,
   'editor': 'html',
-  'has_draft': false,
+  'has_draft': hasDraft,
   if (withContent)
     'content': {
       'html': '<p>Hi {{ first_name }}</p>',
@@ -190,35 +193,49 @@ void main() {
     expect(result.message, 'ok');
   });
 
-  test('templates.getDraft decodes the draft', () async {
-    final api = FakeApi([
-      FakeResponse(200, {
-        'object': 'template_draft',
-        'template_id': templateId,
-        'updated_at': '2025-10-03T09:00:00Z',
-        'subject': 'Draft subject',
-        'preheader': '',
-        'variables': [
-          {'name': 'first_name', 'required': true, 'kind': 'value'},
-        ],
-        'from': null,
-        'reply_to': null,
-        'content': {
-          'mjml': '<mjml></mjml>',
-          'text': 'Custom',
-          'text_is_custom': true,
-        },
-      }),
-    ]);
-    final draft = await api.client().templates.getDraft(templateId);
+  test('templates.getPublished reads the published copy', () async {
+    final api = FakeApi([FakeResponse(200, templateJson(hasDraft: true))]);
+    final template = await api.client().templates.getPublished(templateId);
     expect(api.last.method, 'GET');
-    expect(api.last.url.path, accountPath('/templates/$templateId/draft'));
-    expect(draft.templateId, templateId);
-    expect(draft.subject, 'Draft subject');
-    expect(draft.from, isNull);
-    expect(draft.content!.mjml, '<mjml></mjml>');
-    expect(draft.content!.textIsCustom, isTrue);
-    expect(draft.updatedAt, DateTime.utc(2025, 10, 3, 9));
+    expect(api.last.url.path, accountPath('/templates/$templateId/published'));
+    expect(template.id, templateId);
+    expect(template.hasDraft, isTrue);
+    expect(template.variables.map((v) => v.name), [
+      'first_name',
+      'vip',
+      'items',
+    ]);
+  });
+
+  group('templates.getDraft (deprecated)', () {
+    test('returns the working copy of a template with a draft', () async {
+      final api = FakeApi([FakeResponse(200, templateJson(hasDraft: true))]);
+      final draft = await api.client().templates.getDraft(templateId);
+      expect(api.requests, hasLength(1));
+      expect(api.last.method, 'GET');
+      expect(api.last.url.path, accountPath('/templates/$templateId'));
+      expect(draft.templateId, templateId);
+      expect(draft.updatedAt, DateTime.utc(2025, 10, 2, 9));
+      expect(draft.subject, 'Your order {{ order_id }}');
+      expect(draft.preheader, 'Thanks for your order');
+      expect(draft.variables, hasLength(3));
+      expect(draft.from!.email, 'shop@example.com');
+      expect(draft.replyTo, isNull);
+      expect(draft.content!.html, '<p>Hi {{ first_name }}</p>');
+      expect(draft.raw['object'], 'template');
+    });
+
+    test('throws NotFoundException for a template without a draft', () async {
+      final api = FakeApi([FakeResponse(200, templateJson())]);
+      await expectLater(
+        api.client().templates.getDraft(templateId),
+        throwsA(
+          isA<NotFoundException>()
+              .having((e) => e.statusCode, 'statusCode', 404)
+              .having((e) => e.message, 'message', 'template has no draft'),
+        ),
+      );
+    });
   });
 
   test('templates.discardDraft sends DELETE to the draft', () async {
