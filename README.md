@@ -724,7 +724,7 @@ Common scopes:
 | `campaigns:read`, `campaigns:write`, `campaigns:send`, `campaigns:delete` | Managing and sending campaigns |
 | `contacts:read`, `contacts:write`, `lists:read`, `lists:write` | Managing contacts and lists |
 | `suppressions:read`, `suppressions:write`, `suppressions:delete`, `suppressions:wipe` | Managing suppressions |
-| `statistics-transactional:read:all` | Reading statistics |
+| `statistics:read:all`, `statistics:read:{domain}` | Reading statistics |
 | `smtp-credentials:read:all`, `smtp-credentials:write:all` | Managing SMTP credentials |
 | `api-keys:read`, `api-keys:write`, `api-keys:delete` | Managing API keys |
 | `sub-accounts:*`, `sub-account-api-keys:*` | Managing [sub-accounts](#sub-accounts) (parent keys only) |
@@ -1153,6 +1153,52 @@ void handleInbound(String rawBody, Map<String, String> headers) {
 
 ## Statistics
 
+### Email statistics
+
+`emails` returns stored email counts of transactional, campaign and
+inbound mail, for any time in the account's history:
+
+```dart
+final stats = await client.statistics.emails(
+  fromTime: DateTime.utc(2026, 1, 1),
+  toTime: DateTime.utc(2027, 1, 1),
+  groupBy: .month,
+);
+print('Delivered in 2026: ${stats.totals.deliveredCount}');
+for (final month in stats.data) {
+  print('${month.fromTimestamp}: ${month.deliveredCount} delivered, '
+      '${month.bouncedCount} bounced, ${month.complainedCount} complaints');
+}
+```
+
+The range is rounded to whole periods (`stats.fromTime`, `stats.toTime`)
+and can be at most 31 days for `hour`, 366 days for `day` and `week`, and
+5 years for `month`. Opens, clicks and deferrals count events, so one
+message can add more than one.
+
+Break the counts down by domain with `breakdown: .domain`. The rows are
+paged by domain; `totals` covers the whole request on every page:
+
+```dart
+EmailStatisticsResponse? page = await client.statistics.emails(
+  groupBy: .week,
+  breakdown: .domain,
+  limit: 50,
+);
+while (page != null) {
+  for (final row in page.data) {
+    print('${row.senderDomain} ${row.fromTimestamp}: ${row.receptionCount}');
+  }
+  page = await page.nextPage();
+}
+```
+
+### Transactional statistics
+
+`deliverability`, `bounce` and `deliveryTime` cover transactional mail
+within the account's message retention period, and are rate limited to one
+request per second:
+
 ```dart
 final days = await client.statistics.deliverability(
   fromTime: DateTime.now().subtract(const Duration(days: 7)),
@@ -1171,6 +1217,8 @@ final speed = await client.statistics.deliveryTime(groupBy: .day);
 
 All three take the same filters: `fromTime`, `toTime`, `senderDomains`,
 `recipientDomains`, `tags` and `groupBy` (`hour`, `day`, `week`, `month`).
+`deliverability` counts each message once by its current status, so its
+numbers differ from `emails` for the same range.
 
 ## SMTP credentials
 
@@ -1225,7 +1273,7 @@ await client.accounts.addMember(
 | `client.apiKeys` | API keys |
 | `client.accounts` | Account settings and members |
 | `client.subAccounts` | Sub-accounts, their API keys and usage |
-| `client.statistics` | Deliverability, bounce and delivery-time statistics |
+| `client.statistics` | Email, deliverability, bounce and delivery-time statistics |
 | `client.ping()` | Checks the API key |
 
 Enums and `Patch` values work with dot shorthands, as in `role: .developer`

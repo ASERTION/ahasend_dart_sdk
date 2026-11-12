@@ -221,13 +221,13 @@ final Map<String, Call> calls = {
   'getDeliverabilityStatistics': (c) => c.statistics.deliverability(),
   'getBounceStatistics': (c) => c.statistics.bounce(),
   'getDeliveryTimeStatistics': (c) => c.statistics.deliveryTime(),
+  'getEmailStatistics': (c) => c.statistics.emails(),
 };
 
 /// Operations in the spec that this version of the package has no method
 /// for yet. Their tests are skipped. Remove an entry when its method is
 /// mapped in [calls].
 const notYetCovered = {
-  'getEmailStatistics',
   // Segments
   'getSegments',
   'createSegment',
