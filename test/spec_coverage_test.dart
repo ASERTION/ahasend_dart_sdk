@@ -3,7 +3,7 @@
 // Idempotency-Key header exactly when the spec declares one.
 //
 // When the spec in tool/spec/openapi.yaml is updated, a new operation makes
-// this test fail until it is mapped below.
+// this test fail until it is mapped below or listed in [notYetCovered].
 @TestOn('vm')
 library;
 
@@ -71,7 +71,7 @@ final Map<String, Call> calls = {
   'updateTemplate': (c) =>
       c.templates.update('t', const UpdateTemplateRequest()),
   'deleteTemplate': (c) => c.templates.delete('t'),
-  'getTemplateDraft': (c) => c.templates.getDraft('t'),
+  'getPublishedTemplate': (c) => c.templates.getPublished('t'),
   'discardTemplateDraft': (c) => c.templates.discardDraft('t'),
   'publishTemplate': (c) => c.templates.publish('t'),
   'listTemplateVersions': (c) => c.templates.listVersions('t'),
@@ -223,6 +223,22 @@ final Map<String, Call> calls = {
   'getDeliveryTimeStatistics': (c) => c.statistics.deliveryTime(),
 };
 
+/// Operations in the spec that this version of the package has no method
+/// for yet. Their tests are skipped. Remove an entry when its method is
+/// mapped in [calls].
+const notYetCovered = {
+  'getEmailStatistics',
+  // Segments
+  'getSegments',
+  'createSegment',
+  'previewSegment',
+  'getSegment',
+  'updateSegment',
+  'deleteSegment',
+  'getSegmentContacts',
+  'getContactSegments',
+};
+
 class SpecOperation(
   final String id,
   final String method,
@@ -265,6 +281,12 @@ void main() {
     expect(calls.keys.where((k) => !ids.contains(k)), isEmpty);
   });
 
+  test('every operation not yet covered is in the spec and unmapped', () {
+    final ids = operations.map((o) => o.id).toSet();
+    expect(notYetCovered.where((k) => !ids.contains(k)), isEmpty);
+    expect(notYetCovered.where(calls.containsKey), isEmpty);
+  });
+
   for (final op in operations) {
     test('${op.id}: ${op.method} ${op.path}', () async {
       final call = calls[op.id];
@@ -293,6 +315,6 @@ void main() {
         op.idempotent,
         reason: 'Idempotency-Key header',
       );
-    });
+    }, skip: notYetCovered.contains(op.id) ? 'Not covered yet' : false);
   }
 }

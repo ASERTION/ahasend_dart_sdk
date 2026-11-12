@@ -144,7 +144,12 @@ final class const TemplateContent({
   };
 }
 
-/// A transactional template, as its published copy.
+/// A transactional template, as one of its two copies.
+///
+/// `templates.get` and every template write return the working copy: the
+/// draft while the template has one, and the published copy otherwise.
+/// `templates.getPublished` and `templates.list` return the published
+/// copy, the one sends use. [hasDraft] says whether a draft exists.
 final class const Template({
   /// The template ID. Pass it as `templateId` to
   /// `messages.createFromTemplate`.
@@ -153,38 +158,41 @@ final class const Template({
   /// When the template was created.
   required final DateTime createdAt,
 
-  /// When the name or published content last changed.
+  /// When the name or this copy last changed.
   required final DateTime updatedAt,
 
   /// The template name, as shown in the dashboard.
   required final String name,
 
-  /// The published subject. Empty until one is published.
+  /// This copy's subject. Empty until one is set. A send uses the
+  /// published subject unless it names its own.
   required final String subject,
 
-  /// The published preview text.
+  /// This copy's preview text.
   required final String preheader,
 
-  /// Every variable the design uses. Recipients supply them in
-  /// `substitutions`.
+  /// Every variable this copy's design uses. Recipients supply them in
+  /// `substitutions`. A send checks the variables of the published copy,
+  /// which `templates.getPublished` returns.
   required final List<TemplateVariable> variables,
 
   /// The editor the template is designed with.
   required final TemplateEditor editor,
 
-  /// Whether the template has unpublished changes. `templates.getDraft`
-  /// returns them.
+  /// Whether the template has a draft: changes that are not published yet.
+  /// `templates.get` returns the draft while one exists.
   required final bool hasDraft,
 
-  /// The default sender, or `null` when the template has none (then every
-  /// send must name one).
+  /// This copy's default sender, or `null` when it has none. A send of a
+  /// published copy without one must name a sender.
   final Address? from,
 
-  /// The default reply-to address, or `null` when the template has none.
+  /// This copy's default reply-to address, or `null` when it has none.
   final Address? replyTo,
 
-  /// The published content. `null` when the published copy has no body,
-  /// and always `null` in `templates.list`.
+  /// This copy's content. `null` when it has no body, as for the published
+  /// copy of a template that was never published, and always `null` in
+  /// `templates.list`.
   final TemplateContent? content,
 
   /// The JSON object this value was decoded from.
@@ -243,6 +251,12 @@ final class const Template({
 }
 
 /// A template's draft: saved changes that are not published yet.
+///
+/// Only the deprecated `templates.getDraft` returns it.
+@Deprecated(
+  'The API removed the draft endpoint. Use templates.get, which returns '
+  'the draft as a Template while the template has one.',
+)
 final class const TemplateDraft({
   /// The template the draft belongs to.
   required final String templateId,

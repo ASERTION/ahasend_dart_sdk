@@ -1,3 +1,24 @@
+## Unreleased
+
+AhaSend changed the templates API in October 2026. See the
+[AhaSend changelog](https://ahasend.com/docs/changelog).
+
+### Changes
+
+- New `templates.getPublished`: the published copy of a template, the one
+  sends use. Read the variables a send has to supply from it.
+- `templates.get` returns the working copy: the draft while the template
+  has one, and the published copy otherwise. Before, the API returned the
+  published copy. `Template.hasDraft` says which copy you got. The
+  documentation of `Template` and of the template methods describes the
+  copy each one returns.
+- `templates.getDraft` and `TemplateDraft` are deprecated. The API removed
+  `GET /templates/{template_id}/draft`, so `getDraft` of 1.0.0 no longer
+  works. It now reads the template with `templates.get` and returns its
+  draft, and throws a `NotFoundException` when there is none, as before.
+  Use `templates.get` instead.
+- `tool/spec/openapi.yaml` is updated to the current AhaSend API.
+
 ## 1.0.0
 
 AhaSend changes message IDs in the API and in webhooks on
