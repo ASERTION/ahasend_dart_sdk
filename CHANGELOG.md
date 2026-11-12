@@ -1,23 +1,11 @@
-## Unreleased
+## 1.1.0
 
 AhaSend changed the templates API in October 2026 and added email
-statistics in November 2026. See the
+statistics in November 2026. This release follows both changes. See the
 [AhaSend changelog](https://ahasend.com/docs/changelog).
 
-### Changes
+### Email statistics
 
-- New `templates.getPublished`: the published copy of a template, the one
-  sends use. Read the variables a send has to supply from it.
-- `templates.get` returns the working copy: the draft while the template
-  has one, and the published copy otherwise. Before, the API returned the
-  published copy. `Template.hasDraft` says which copy you got. The
-  documentation of `Template` and of the template methods describes the
-  copy each one returns.
-- `templates.getDraft` and `TemplateDraft` are deprecated. The API removed
-  `GET /templates/{template_id}/draft`, so `getDraft` of 1.0.0 no longer
-  works. It now reads the template with `templates.get` and returns its
-  draft, and throws a `NotFoundException` when there is none, as before.
-  Use `templates.get` instead.
 - New `statistics.emails`: stored email counts of transactional, campaign
   and inbound mail for the account or per domain, in hourly, daily, weekly
   or monthly periods, for any time in the account's history. It returns an
@@ -29,6 +17,27 @@ statistics in November 2026. See the
   scopes, `statistics:read:all` and `statistics:read:{domain}`. The API
   still accepts the old `statistics-transactional:read:*` names, but
   refuses an API key that lists the same access under both names.
+
+### Templates
+
+- New `templates.getPublished`: the published copy of a template, the one
+  sends use. Read the variables a send has to supply from it.
+- `templates.get` returns the working copy: the draft while the template
+  has one, and the published copy otherwise. Before, the API returned the
+  published copy. `Template.hasDraft` says which copy you got. The
+  documentation of `Template` and of the template methods describes the
+  copy each one returns.
+
+### Deprecations
+
+- `templates.getDraft` and `TemplateDraft`. The API removed
+  `GET /templates/{template_id}/draft`, so `getDraft` of 1.0.0 no longer
+  works. It now reads the template with `templates.get` and returns its
+  draft, and throws a `NotFoundException` when there is none, as before.
+  Use `templates.get` instead.
+
+### Other
+
 - `tool/spec/openapi.yaml` is updated to the current AhaSend API.
 
 ## 1.0.0

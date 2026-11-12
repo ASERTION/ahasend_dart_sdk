@@ -2,7 +2,7 @@ name: ahasend
 description: >-
   Pure Dart client for the AhaSend email API v2, with webhook signature
   verification. Works on the Dart VM, Flutter and the web.
-version: 1.0.0
+version: 1.1.0
 repository: https://github.com/asertion/ahasend_dart_sdk
 issue_tracker: https://github.com/asertion/ahasend_dart_sdk/issues
 documentation: https://ahasend.com/docs/api-reference
